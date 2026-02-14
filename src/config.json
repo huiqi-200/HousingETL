@@ -1,0 +1,11 @@
+{
+    "ColumnNames": ["month","town","flat_type","block","street_name","storey_range","floor_area_sqm","flat_model","lease_commence_date","resale_price"],
+    "FolderPaths": {
+        "RawFolderPath": "../Raw/",
+        "CleanedFolderPath": "../Cleaned/",
+        "TransformedFolderPath": "../Transformed/",
+        "FailedFolderPath": "../Failed/",
+        "HashedFolderPath": "../Hashed/",
+        "LogsFolderPath": "../Logs/"
+    }
+}
