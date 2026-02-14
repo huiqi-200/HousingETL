@@ -21,7 +21,7 @@ raw_resale_flat_schema = {
 
 cleaned_resale_flat_schema = {
     "year": pl.Int32,
-    "month": pl.Date("%Y-%m"),               
+    "month": pl.Date(),               
     "town": pl.Utf8,                
     "flat_type": pl.Utf8,            
     "block": pl.Utf8,                
@@ -31,5 +31,5 @@ cleaned_resale_flat_schema = {
     "flat_model": pl.Utf8,           
     "lease_commence_date": pl.Utf8, 
     "remaining_lease": pl.Utf8,      # text like "89 years"
-    "resale_price": pl.Decimal   
+    "resale_price": pl.Int64   
 }

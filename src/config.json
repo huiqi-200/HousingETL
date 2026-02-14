@@ -1,12 +1,12 @@
 {
     "ColumnNames": ["month","town","flat_type","block","street_name","storey_range","floor_area_sqm","flat_model","lease_commence_date","resale_price"],
     "FolderPaths": {
-        "RawFolderPath": "../Raw/",
-        "CleanedFolderPath": "../Cleaned/",
-        "TransformedFolderPath": "../Transformed/",
-        "FailedFolderPath": "../Failed/",
-        "HashedFolderPath": "../Hashed/",
-        "LogsFolderPath": "../Logs/"
+        "RawFolderPath": "../Raw",
+        "CleanedFolderName": "../Data/Cleaned.csv",
+        "TransformedFolderName": "../Data/Transformed.csv",
+        "FailedFolderName": "../Data/Failed.csv",
+        "HashedFolderName": "../Data/Hashed.csv",
+        "LogsFolderName": "../Data/Logs.csv"
     },
     "ProfilingReport":{
         "ProfileReportPath": "../Logs/ProfilingReport.html"

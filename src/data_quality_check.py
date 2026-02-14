@@ -5,7 +5,7 @@ import os
 import ydata_profiling as yp
 
 #Own Python files
-from resale_flat_schema import raw_resale_flat_schema
+from resale_flat_schema import raw_resale_flat_schema, cleaned_resale_flat_schema
 from logging_function import logger
 
 # Load config
@@ -21,16 +21,6 @@ raw_folder = config["FolderPaths"]["RawFolderPath"]
 profile_report_path = config["ProfilingReport"]["ProfileReportPath"]
 required_columns = config["ColumnNames"]
 
-
-# Create missing folders for storing datasets required for excercise
-for name, path in folder_paths.items():
-    folder = os.path.join(os.getcwd(), path)
-    
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-        logger.info(f"Created folder: {folder}")
-    else:
-        logger.info(f"Folder already exists: {folder}")
 
 
 ## Get files from raw data folder and parse into profiler 
@@ -87,6 +77,8 @@ def data_validation(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
        * Converts values to uppercase.
        * Keeps only rows whose value is in the expected list.
     3. Splits the input into ``qualified`` and ``not_qualified`` frames.
+    4. Casts the qualified frame back to ``cleaned_resale_flat_schema`` types,
+       converting ``resale_price`` from formatted string to integer.
 
     Args:
         df: Input DataFrame.
@@ -97,24 +89,77 @@ def data_validation(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
     """
     categorical_rules = load_quality_rules()
 
-    # uppercase string columns
-    for column in categorical_rules.keys():
-        if column in df.columns:
-            df_uppercase = df.with_columns(pl.col(column).str.to_uppercase().alias(column))
+    # 1. cast qualified dataframe to cleaned schema types
+    non_numeric_df, qualified_df = filter_null_values(df)
 
-    # Keep only values that are in the expected list for each column
-    for column, rule in categorical_rules.items():
-        expected = rule.get("expected_values", [])
-        if column in df_uppercase.columns and expected:
-            qualified_df = df_uppercase.filter(pl.col(column).is_in(expected))
-            not_qualified_df = df_uppercase.filter(~pl.col(column).is_in(expected))
-    
-    
+    # 2. uppercase all categorical columns to standardize before filtering
+    qualified_df = qualified_df.with_columns(pl.col(list(categorical_rules.keys())).str.to_uppercase())
     logger.info(
-        f"Validation complete: {qualified_df.height} qualified, {not_qualified_df.height} not qualified"
+        f"Successfully converted all categorical values to upper case"
+    )
+    # Keep only values that are in the expected list for each column
+    qualified_df, missing_from_expected_cat_df = filter_categorical_expected_values(categorical_rules, qualified_df)
+
+    logger.info(
+        f"Successfully filtered out categorical values based on rules: {qualified_df.height} qualified, {missing_from_expected_cat_df.height} not qualified"
     )
 
-    return qualified_df, not_qualified_df
+    qualified_df, df_duplicates_subset = filter_duplicate_rows(qualified_df)
+    unqualified_df = pl.concat([non_numeric_df, missing_from_expected_cat_df, df_duplicates_subset])
+    logger.info(
+        f"Validation complete: {qualified_df.height} qualified, {unqualified_df.height} not qualified"
+    )
+
+    
+    # Export to Cleaned and Failed files
+    qualified_df.write_csv(config["FolderPaths"]["CleanedFolderName"])
+    unqualified_df.write_csv(config["FolderPaths"]["FailedFolderName"])
+
+    return qualified_df, unqualified_df
+
+
+# Helper functions for filtering data quality issues
+def filter_duplicate_rows(qualified_df):
+    list_required_columns = qualified_df.columns
+    list_required_columns.remove("resale_price")
+    #3. Remove duplicate rows 
+    qualified_df = qualified_df.with_columns(composite_key=pl.concat_str(list_required_columns, separator="-"))
+    qualified_df.sort("resale_price", descending=True) # keep the one with highest resale price if there are duplicates
+    qualified_unique_df = qualified_df.unique(subset=["composite_key"], keep="first")
+    df_duplicates_subset = qualified_df.filter(pl.col("composite_key").is_duplicated()).drop("composite_key")
+    return qualified_unique_df,df_duplicates_subset
+
+def filter_null_values(df):
+    df_cast = df.with_columns(pl.col("resale_price").str.to_integer(strict=False),
+    pl.col("month").str.to_date(format="%Y-%m", strict=False),
+    pl.col("floor_area_sqm").str.to_integer(strict=False))
+
+
+
+    non_numeric_df = df_cast.filter(
+        pl.col("resale_price").is_null() |
+        pl.col("month").is_null() |
+        pl.col("floor_area_sqm").is_null()
+    )
+    qualified_df = df_cast.filter(
+    pl.col("resale_price").is_not_null() &
+    pl.col("month").is_not_null() &
+    pl.col("floor_area_sqm").is_not_null()
+    )
+
+    logger.info(
+        f"Successfully converted and filtered out null values: {non_numeric_df.height} rows with null values found"
+    )
+    
+    return non_numeric_df,qualified_df
+
+def filter_categorical_expected_values(categorical_rules, qualified_df):
+    for column, rule in categorical_rules.items():
+        expected = rule.get("expected_values", [])
+        if column in qualified_df.columns and expected:
+            qualified_final_df = qualified_df.filter(pl.col(column).is_in(expected))
+            missing_from_expected_cat_df = qualified_df.filter(~pl.col(column).is_in(expected))
+    return qualified_final_df,missing_from_expected_cat_df
 
 
 def get_column_resale_identifier(df: pl.DataFrame) -> pl.Series:
