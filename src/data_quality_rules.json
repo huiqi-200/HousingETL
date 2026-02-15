@@ -1,32 +1,5 @@
 {
     "categorical_columns": {
-        "town": {
-            "expected_values": [
-                "ANG MO KIO",
-                "BEDOK",
-                "BISHAN",
-                "BUKIT BATOK",
-                "BUKIT MERAH",
-                "BUKIT TIMAH",
-                "CENTRAL AREA",
-                "CHOA CHU KANG",
-                "CLEMENTI",
-                "GEYLANG",
-                "HOUGANG",
-                "JURONG EAST",
-                "JURONG WEST",
-                "KALLANG/WHAMPOA",
-                "MARINE PARADE",
-                "QUEENSTOWN",
-                "SEMBAWANG",
-                "SENGKANG",
-                "SERANGOON",
-                "TAMPINES",
-                "TOA PAYOH",
-                "WOODLANDS",
-                "YISHUN"
-            ]
-        },
         "flat_type": {
             "expected_values": [
                 "1 ROOM",
@@ -55,7 +28,13 @@
     },
         "numerical_columns": {
         "remaining_lease": {
-            "max": 99
+            "max": 99 
+        }
+    },
+    "filters":{
+        "month":{
+            "max_month": "2026-12",
+            "min_month": "2012-01"
         }
     }
 }

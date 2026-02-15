@@ -29,7 +29,7 @@ cleaned_resale_flat_schema = {
     "storey_range": pl.Utf8,         
     "floor_area_sqm": pl.Int64,    
     "flat_model": pl.Utf8,           
-    "lease_commence_date": pl.Utf8, 
+    "lease_commence_date": pl.Date(), 
     "remaining_lease": pl.Utf8,      # text like "89 years"
     "resale_price": pl.Int64   
 }

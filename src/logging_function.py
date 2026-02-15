@@ -11,7 +11,7 @@ logger.setLevel(logging.INFO)
 if not logger.handlers:
     # console handler
     console = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    formatter = logging.Formatter("%(asctime)s [%(levelname)s] (%(funcName)s) %(message)s")
     console.setFormatter(formatter)
     logger.addHandler(console)
 
