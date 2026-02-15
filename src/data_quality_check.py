@@ -78,6 +78,8 @@ def data_validation(df: pl.DataFrame) -> tuple[pl.DataFrame, pl.DataFrame]:
         A tuple ``(qualified_df, not_qualified_df)``. Rows with null ``id``
         are removed entirely (they do not appear in either output).
     """
+
+
     categorical_rules = load_quality_rules()
 
     # 1. cast qualified dataframe to cleaned schema types
