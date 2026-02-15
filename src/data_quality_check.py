@@ -26,7 +26,7 @@ required_columns = config["ColumnNames"]
 
 
 ## Get files from raw data folder and parse into profiler
-def data_quality_run(reprofile=False):
+def data_profiling_run(reprofile=False):
     """
     Input:
     Output:
