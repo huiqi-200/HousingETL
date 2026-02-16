@@ -4,7 +4,7 @@ import os
 import polars as pl
 import hashlib
 
-from resale_flat_schema import cleaned_resale_flat_schema, raw_resale_flat_schema
+from resale_flat_schema import cleaned_resale_flat_schema, raw_resale_flat_schema, failed_resale_flat_schema
 from logging_function import logger
 
 # Load config
@@ -45,6 +45,25 @@ def transform_cleaned_data():
     logger.info(f"Loaded {df.height} rows")
 
     
+    df_remove_duplicates, df_duplicates_subset = filter_resale_identifier(df)
+
+
+    # Export to Cleaned and Failed files
+
+    logger.info("Updating failed records CSV")
+    update_csv(df_duplicates_subset, config["FolderPaths"]["FailedFolderName"])
+    
+    logger.info("Writing transformed data to CSV")
+    df_remove_duplicates.write_csv(config["FolderPaths"]["TransformedFolderName"])
+
+    df_hashed = get_hashed_dataset(df_remove_duplicates)
+    logger.info("Writing hashed data to CSV")
+    df_hashed.write_csv(config["FolderPaths"]["HashedFolderName"])
+
+
+    return df_hashed
+
+def filter_resale_identifier(df):
     df_with_resale_identifier = get_resale_identifier(df)
     logger.info("Sorting by resale_price and removing duplicates")
     df_with_resale_identifier = df_with_resale_identifier.sort("resale_price", descending=True, maintain_order=True)
@@ -59,16 +78,10 @@ def transform_cleaned_data():
         pl.col("resale_identifier").is_duplicated()
     ).drop("resale_identifier")
 
-    logger.info("Updating failed records CSV")
-    update_csv(df_duplicates_subset, config["FolderPaths"]["FailedFolderName"])
-    
-    # Export to Cleaned and Failed files
-    logger.info("Writing transformed data to CSV")
-    df_remove_duplicates.write_csv(config["FolderPaths"]["TransformedFolderName"])
-
-
-
-    return df_with_resale_identifier
+    df_duplicates_subset = df_duplicates_subset.with_columns(
+        pl.lit("filter_resale_identifier").alias("reason_for_fail"))
+        
+    return df_remove_duplicates,df_duplicates_subset
 
 def get_hashed_dataset(df):
     def hash_row(row):
@@ -137,11 +150,11 @@ def update_csv(df: pl.DataFrame, path: str) -> None:
         # Read existing CSV
         existing = pl.read_csv(path,         
         has_header=True, 
-        schema=raw_resale_flat_schema
+        schema=failed_resale_flat_schema
     )
         
         # Align df to existing columns
-        aligned = df.select([col for col in existing.columns if col in df.columns]).cast(raw_resale_flat_schema)
+        aligned = df.select([col for col in existing.columns if col in df.columns]).cast(failed_resale_flat_schema)
 
 
         # Append

@@ -31,5 +31,23 @@ cleaned_resale_flat_schema = {
     "flat_model": pl.Utf8,           
     "lease_commence_date": pl.Date(), 
     "remaining_lease": pl.Utf8,      # text like "89 years"
-    "resale_price": pl.Int64   
+    "resale_price": pl.Int64,
+    "created_datetime": pl.Datetime,     
 }
+
+failed_resale_flat_schema = {
+    "month": pl.Date(),               
+    "town": pl.Utf8,                
+    "flat_type": pl.Utf8,            
+    "block": pl.Utf8,                
+    "street_name": pl.Utf8,          
+    "storey_range": pl.Utf8,         
+    "floor_area_sqm": pl.Int64,    
+    "flat_model": pl.Utf8,           
+    "lease_commence_date": pl.Date(), 
+    "remaining_lease": pl.Utf8,      # text like "89 years"
+    "resale_price": pl.Int64,
+    "created_datetime": pl.Utf8,
+    "reason_for_fail": pl.Utf8,
+}
+
