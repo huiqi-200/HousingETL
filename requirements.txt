@@ -1,4 +1,5 @@
 ydata-profiling
 polars == 1.38.1
 pyarrow == 23.0.0
+ipykernel == 7.2.0
 #For python 3.10.9
