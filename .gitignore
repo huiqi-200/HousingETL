@@ -1,5 +1,6 @@
-Data/*
+Data/
 Raw/*
 Logs/*
 .venv/
 __pycache__/
+.vscode/

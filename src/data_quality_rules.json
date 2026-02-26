@@ -33,7 +33,7 @@
     },
     "filters":{
         "month":{
-            "max_month": "2026-12",
+            "max_month": "2016-12",
             "min_month": "2012-01"
         }
     }
