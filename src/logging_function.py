@@ -24,7 +24,7 @@ if not logger.handlers:
         if logs_relative:
             logs_dir = Path(os.getcwd()) / logs_relative
             logs_dir.mkdir(parents=True, exist_ok=True)
-            file_handler = logging.FileHandler(logs_dir / "housing_etl.log")
+            file_handler = logging.FileHandler(logs_dir)
             file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
     except Exception:

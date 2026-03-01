@@ -6,8 +6,8 @@ import ydata_profiling as yp
 from datetime import date, datetime
 
 # Own Python files
-from resale_flat_schema import raw_resale_flat_schema, cleaned_resale_flat_schema
-from logging_function import logger
+from src.resale_flat_schema import raw_resale_flat_schema, cleaned_resale_flat_schema
+from src.logging_function import logger
 
 # Load config
 config_path = Path(__file__).parent / "config.json"
