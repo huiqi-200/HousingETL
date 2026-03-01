@@ -3,13 +3,13 @@ from pathlib import Path
 import os 
 import polars as pl
 import hashlib
-
-from resale_flat_schema import cleaned_resale_flat_schema, raw_resale_flat_schema, failed_resale_flat_schema
-from logging_function import logger
+print(os.getcwd())
+from src.resale_flat_schema import cleaned_resale_flat_schema, raw_resale_flat_schema, failed_resale_flat_schema
+from src.logging_function import logger
 
 # Load config
-config_path = Path(__file__).parent / "config.json"
-rules_path = Path(__file__).parent / "data_quality_rules.json"
+config_path = "src/config.json"
+rules_path = "src/data_quality_rules.json"
 with open(config_path, "r") as f:
     config = json.load(f)
 with open(rules_path, "r") as f:
@@ -25,13 +25,7 @@ def transform_cleaned_data():
         Grouped DataFrame containing month, flat_type and average resale_price.
     """
 
-    # load configuration and resolve cleaned file path
-    logger.info("Loading configuration file")
-    config_path = Path(__file__).parent / "config.json"
-    with open(config_path, "r", encoding="utf-8") as cfg:
-        cfg_data = json.load(cfg)
-
-    cleaned_path = Path(__file__).parent / cfg_data["FolderPaths"]["CleanedFolderName"]
+    cleaned_path = config["FolderPaths"]["CleanedFolderName"]
     logger.info(f"Cleaned data path resolved: {cleaned_path}")
 
     # read using the schema defined in resale_flat_schema
@@ -159,8 +153,8 @@ def update_csv(df: pl.DataFrame, path: str) -> None:
 
         # Append
         updated = pl.concat([existing, aligned], how="vertical")
-        
-        updated.write_csv(path)
+        os.remove(path)  # Remove old file before writing updated one
+        updated.write_csv(path )
     
 if __name__ == "__main__":
     result = transform_cleaned_data()
